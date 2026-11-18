@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>拼豆报价计算器</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f1edfb;--card:#fff;--ink:#2e2357;--mute:#76709b;--line:#d9d2f1;--acc:#6b4fd8;--acc-ink:#fff;--soft:#ebe5fa;--rush:#e8590c;--ok:#1f8a4c;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17132b;--card:#221c40;--ink:#ece8fb;--mute:#a49fc8;--line:#3a3265;--acc:#9a84ff;--acc-ink:#17132b;--soft:#2c2550;--rush:#ff9254;--ok:#5fd68f}}
+:root[data-theme="dark"]{--bg:#17132b;--card:#221c40;--ink:#ece8fb;--mute:#a49fc8;--line:#3a3265;--acc:#9a84ff;--acc-ink:#17132b;--soft:#2c2550;--rush:#ff9254;--ok:#5fd68f}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Nunito',system-ui,-apple-system,'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif;font-weight:500;line-height:1.45}
+main{max-width:640px;margin:0 auto;padding:20px 14px 130px}
+h1{font-size:1.5rem;margin:4px 0 2px;font-weight:800}
+h2{font-size:1.1rem;margin:0 0 10px;font-weight:800}
+.sub{color:var(--mute);margin:0 0 16px;font-size:.92rem}
+.item,.panel{background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px}
+.top{display:flex;gap:8px;align-items:center;margin-bottom:10px}
+input[type=text],input[type=number]{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1.5px solid var(--line);border-radius:10px;padding:10px 11px;min-width:0}
+input:focus-visible,button:focus-visible,summary:focus-visible{outline:3px solid var(--acc);outline-offset:1px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+label.f{display:block;font-size:.8rem;color:var(--mute);font-weight:700}
+label.f input{margin-top:4px}
+.rush{display:flex;align-items:center;gap:8px;margin:12px 0 0;font-weight:700;cursor:pointer}
+.rush input{width:20px;height:20px;accent-color:var(--rush)}
+.res{margin-top:12px;padding-top:12px;border-top:1.5px dashed var(--line);display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline;justify-content:space-between}
+.tier{font-size:.85rem;color:var(--mute)}
+.tier b{color:var(--ink)}
+.unit{font-weight:700}
+.sub-total{font-size:1.3rem;font-weight:800;color:var(--acc)}
+.pc{font-size:.85rem;color:var(--mute);width:100%}
+.del{flex:none;border:0;background:var(--soft);color:var(--mute);width:38px;height:38px;border-radius:10px;font-size:1.1rem;cursor:pointer}
+.add{width:100%;font:inherit;font-weight:800;border:2px dashed var(--acc);background:transparent;color:var(--acc);border-radius:14px;padding:13px;cursor:pointer;margin-bottom:12px}
+.add:hover{background:var(--soft)}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.seg button{font:inherit;font-weight:800;padding:10px;border-radius:10px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer}
+.seg button[aria-pressed=true]{background:var(--acc);color:var(--acc-ink);border-color:var(--acc)}
+.row{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-top:1px solid var(--line)}
+.row:first-of-type{border-top:0}
+.row span:last-child{font-weight:700;text-align:right}
+.row.big span{font-size:1.1rem;font-weight:800}
+.dep{background:var(--soft);border-radius:12px;padding:10px 12px;margin-top:10px}
+.dep .row{border-color:var(--line)}
+.dep .hl{color:var(--acc);font-size:1.25rem;font-weight:800}
+.note{font-size:.82rem;color:var(--mute);margin:6px 0 0}
+.bar{position:fixed;left:0;right:0;bottom:0;background:var(--acc);color:var(--acc-ink);padding:12px 18px calc(12px + env(safe-area-inset-bottom,0px));box-shadow:0 -4px 18px rgba(0,0,0,.18)}
+.bar div{max-width:640px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.bar small{display:block;opacity:.88;font-weight:700}
+.bar strong{font-size:1.6rem;font-weight:800;display:block}
+details{margin-top:6px;background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:10px 14px}
+summary{font-weight:800;cursor:pointer}
+table{width:100%;border-collapse:collapse;margin-top:8px;font-size:.92rem}
+td{padding:6px 0;border-top:1px solid var(--line)}
+td:last-child{text-align:right;font-weight:700}
+.clear{margin-top:14px;background:none;border:0;color:var(--mute);font:inherit;text-decoration:underline;cursor:pointer}
+</style>
+</head>
+<body>
+<main>
+<h1>拼豆报价计算器</h1>
+<p class="sub">逐个添加订单中的商品，按颜色数量自动匹配每颗价格。</p>
+<div id="items"></div>
+<button class="add" id="add" type="button">+ 添加商品</button>
+
+<section class="panel" aria-labelledby="shipH">
+<h2 id="shipH">邮费</h2>
+<div class="seg">
+<button type="button" id="r0" aria-pressed="true">非偏远地区</button>
+<button type="button" id="r1" aria-pressed="false">偏远地区</button>
+</div>
+<label class="f" id="extraWrap" hidden>补差价（元，沟通后填写）<input type="number" inputmode="decimal" min="0" id="extra" placeholder="0"></label>
+<p class="note" id="shipNote"></p>
+</section>
+
+<section class="panel" aria-labelledby="sumH">
+<h2 id="sumH">订单汇总</h2>
+<div class="row"><span>商品合计</span><span id="goods">¥0.00</span></div>
+<div class="row"><span>邮费</span><span id="ship">¥0.00</span></div>
+<div class="row big"><span>应付总额</span><span id="grand">¥0.00</span></div>
+<div class="dep">
+<div class="row"><span>定金比例</span><span>50%</span></div>
+<div class="row"><span>需付定金</span><span class="hl" id="dep">¥0.00</span></div>
+<div class="row"><span>剩余尾款</span><span id="bal">¥0.00</span></div>
+</div>
+<p class="note">定金按应付总额（含邮费）的 50% 计算。</p>
+</section>
+
+<details>
+<summary>价格表（元/颗）</summary>
+<table>
+<tr><td>普通豆（20色以内）</td><td>0.01</td></tr>
+<tr><td>色号复杂（20色到60色）</td><td>0.015</td></tr>
+<tr><td>色号复杂（60色以上）</td><td>0.02</td></tr>
+<tr><td>加急订单</td><td>0.02</td></tr>
+<tr><td>色号复杂 + 加急</td><td>0.03</td></tr>
+</table>
+<table>
+<tr><td>非偏远地区</td><td>8元</td></tr>
+<tr><td>满30元</td><td>半包邮（4元）</td></tr>
+<tr><td>满50元</td><td>全包邮</td></tr>
+<tr><td>偏远地区</td><td>需补差价，具体沟通</td></tr>
+</table>
+<p class="note">色号超过20色且加急，统一按 0.03元/颗 计算。半包邮按邮费减半（4元）计算，按商品合计判断是否满额。</p>
+</details>
+<button class="clear" id="clear" type="button">清空订单</button>
+</main>
+<div class="bar"><div>
+<span><small id="count">0 件商品</small><small id="beads">0 颗</small></span>
+<span style="text-align:right"><small>应付总额</small><strong id="total">¥0.00</strong></span>
+<span style="text-align:right"><small>50%定金</small><strong id="total2">¥0.00</strong></span>
+</div></div>
+<script>
+var items=[],nid=1,remote=false;
+function rate(c,rush){
+  if(c>20) return rush?0.03:(c>60?0.02:0.015);
+  return rush?0.02:0.01;
+}
+function tierName(c,rush){
+  var t=c>60?'色号复杂（60色以上）':c>20?'色号复杂（20–60色）':'普通豆（20色以内）';
+  return rush?t+' + 加急':t;
+}
+function money(n){return '¥'+(Math.round(n*100)/100).toFixed(2)}
+function addItem(){items.push({id:nid++,name:'',beads:'',colors:'',qty:1,rush:false});render(true)}
+function calc(it){
+  var b=+it.beads||0,c=+it.colors||0,q=+it.qty||0;
+  var r=rate(c,it.rush),per=b*r;
+  return {r:r,per:per,sub:per*q,b:b*q,c:c};
+}
+function render(focusLast){
+  var box=document.getElementById('items');
+  box.innerHTML='';
+  items.forEach(function(it,i){
+    var d=document.createElement('div');d.className='item';d.dataset.id=it.id;
+    d.innerHTML='<div class="top"><input type="text" data-k="name" placeholder="商品'+(i+1)+'名称（选填）" aria-label="商品名称"><button class="del" type="button" aria-label="删除商品">✕</button></div>'+
+    '<div class="grid">'+
+    '<label class="f">每件豆数<input type="number" inputmode="numeric" min="0" data-k="beads" placeholder="如 800"></label>'+
+    '<label class="f">颜色数<input type="number" inputmode="numeric" min="0" data-k="colors" placeholder="如 15"></label>'+
+    '<label class="f">数量<input type="number" inputmode="numeric" min="1" data-k="qty"></label></div>'+
+    '<label class="rush"><input type="checkbox" data-k="rush"> 加急订单</label>'+
+    '<div class="res"><span class="tier"></span><span class="sub-total"></span><span class="pc"></span></div>';
+    d.querySelector('[data-k=name]').value=it.name;
+    d.querySelector('[data-k=beads]').value=it.beads;
+    d.querySelector('[data-k=colors]').value=it.colors;
+    d.querySelector('[data-k=qty]').value=it.qty;
+    d.querySelector('[data-k=rush]').checked=it.rush;
+    box.appendChild(d);
+  });
+  update();
+  if(focusLast){var l=box.lastElementChild;if(l){l.querySelector('input').focus();l.scrollIntoView({block:'center',behavior:'smooth'})}}
+}
+function shipping(goods){
+  if(goods<=0) return {fee:0,note:'添加商品后自动计算。'};
+  if(remote){
+    var e=+document.getElementById('extra').value||0;
+    var base=goods>=50?0:goods>=30?4:8;
+    return {fee:base+e,note:'偏远地区需补差价，具体沟通。基础邮费 '+money(base)+' + 补差价 '+money(e)+'。'};
+  }
+  if(goods>=50) return {fee:0,note:'满50元，全包邮。'};
+  if(goods>=30) return {fee:4,note:'满30元，半包邮（邮费 4 元）。再买 '+money(50-goods)+' 即可全包邮。'};
+  return {fee:8,note:'邮费 8 元。再买 '+money(30-goods)+' 可享半包邮。'};
+}
+function update(){
+  var goods=0,beads=0;
+  document.querySelectorAll('.item').forEach(function(d){
+    var it=items.find(function(x){return x.id==d.dataset.id});
+    var c=calc(it);
+    goods+=c.sub;beads+=c.b;
+    var has=(+it.beads)>0&&it.colors!=='';
+    d.querySelector('.tier').innerHTML=has?'<b>'+tierName(c.c,it.rush)+'</b> · <span class="unit">'+c.r+' 元/颗</span>':'请输入豆数和颜色数';
+    d.querySelector('.sub-total').textContent=has?money(c.sub):'¥0.00';
+    d.querySelector('.pc').textContent=has?('单件：'+money(c.per)+' × '+(+it.qty||0)+' 件 = '+money(c.sub)):'';
+  });
+  var s=shipping(goods),grand=goods+s.fee,dep=grand/2;
+  document.getElementById('goods').textContent=money(goods);
+  document.getElementById('ship').textContent=s.fee===0&&goods>0?'免邮':money(s.fee);
+  document.getElementById('grand').textContent=money(grand);
+  document.getElementById('dep').textContent=money(dep);
+  document.getElementById('bal').textContent=money(grand-Math.round(dep*100)/100);
+  document.getElementById('shipNote').textContent=s.note;
+  document.getElementById('total').textContent=money(grand);
+  document.getElementById('total2').textContent=money(dep);
+  document.getElementById('count').textContent=items.length+' 件商品';
+  document.getElementById('beads').textContent=beads.toLocaleString()+' 颗';
+}
+function setRemote(v){
+  remote=v;
+  document.getElementById('r0').setAttribute('aria-pressed',String(!v));
+  document.getElementById('r1').setAttribute('aria-pressed',String(v));
+  document.getElementById('extraWrap').hidden=!v;
+  update();
+}
+document.getElementById('r0').onclick=function(){setRemote(false)};
+document.getElementById('r1').onclick=function(){setRemote(true)};
+document.getElementById('extra').addEventListener('input',update);
+document.getElementById('items').addEventListener('input',function(e){
+  var d=e.target.closest('.item');if(!d)return;
+  var it=items.find(function(x){return x.id==d.dataset.id});
+  var k=e.target.dataset.k;
+  it[k]=e.target.type==='checkbox'?e.target.checked:e.target.value;
+  update();
+});
+document.getElementById('items').addEventListener('click',function(e){
+  if(!e.target.classList.contains('del'))return;
+  var id=e.target.closest('.item').dataset.id;
+  items=items.filter(function(x){return x.id!=id});
+  if(!items.length)addItem();else render();
+});
+document.getElementById('add').onclick=addItem;
+document.getElementById('clear').onclick=function(){items=[];document.getElementById('extra').value='';setRemote(false);addItem()};
+addItem();
+</script>
+</body>
+</html>
